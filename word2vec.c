@@ -75,7 +75,9 @@ void ReadWord(char *word, FILE *fin) {
     if (ch == 13) continue;
     if ((ch == ' ') || (ch == '\t') || (ch == '\n')) {
       if (a > 0) {
-        if (ch == '\n') ungetc(ch, fin);
+        if (ch == '\n')
+            ungetc(ch, fin);
+        //当碰到空格 制表符 换行时，都break
         break;
       }
       if (ch == '\n') {
@@ -118,6 +120,7 @@ int ReadWordIndex(FILE *fin) {
 }
 
 // Adds a word to the vocabulary
+//同时建立vocab_hash. hash 以词的hash值做键，该词在vocab中的位置做值。
 int AddWordToVocab(char *word) {
   unsigned int hash, length = strlen(word) + 1;
   if (length > MAX_STRING) length = MAX_STRING;
@@ -335,6 +338,10 @@ void ReadVocab() {
   fclose(fin);
 }
 
+//layer1_size是每个词向量的维数，可以在运行时设定。
+//vocab_size是词汇表中词汇的数目
+//syn0 是每个词向量的初始值，初始化为随机值。
+//syn1 是x * theata的theata的值，即哈夫曼树中路过的每个节点的权重。
 void InitNet() {
   long long a, b;
   unsigned long long next_random = 1;
