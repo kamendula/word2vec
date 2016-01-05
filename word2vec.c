@@ -356,6 +356,8 @@ void InitNet() {
     next_random = next_random * (unsigned long long)25214903917 + 11;
     syn0[a * layer1_size + b] = (((next_random & 0xFFFF) / (real)65536) - 0.5) / layer1_size;
   }
+
+  //创建哈夫曼树
   CreateBinaryTree();
 }
 
@@ -547,12 +549,17 @@ void TrainModel() {
   pthread_t *pt = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
   printf("Starting training using file %s\n", train_file);
   starting_alpha = alpha;
+  //可以从参数配置的文件中读取，也可以直接用训练数据读取数据。
   if (read_vocab_file[0] != 0) ReadVocab(); else LearnVocabFromTrainFile();
   if (save_vocab_file[0] != 0) SaveVocab();
   if (output_file[0] == 0) return;
+
+  //初始化各参数的值，包括:各词向量初始值，各theata初始值，误差初始值等。
   InitNet();
   if (negative > 0) InitUnigramTable();
   start = clock();
+
+  //多线程处理
   for (a = 0; a < num_threads; a++) pthread_create(&pt[a], NULL, TrainModelThread, (void *)a);
   for (a = 0; a < num_threads; a++) pthread_join(pt[a], NULL);
   fo = fopen(output_file, "wb");
