@@ -31,13 +31,13 @@
 # Debug files
 *.dSYM/
 
-#Souceingsight files
+# Sourceinsight files
 *.IAB
 *.IAD
 *.IMB
 *.IMD
-*.PFI
 *.PO
 *.PR
 *.PRI
 *.PS
+*.PFI
