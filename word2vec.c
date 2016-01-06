@@ -375,7 +375,9 @@ void *TrainModelThread(void *id) {
   unsigned long long next_random = (long long)id;
   real f, g;
   clock_t now;
+  //neu1 词向量的向量和，因此和layer1_size同长
   real *neu1 = (real *)calloc(layer1_size, sizeof(real));
+  //误差
   real *neu1e = (real *)calloc(layer1_size, sizeof(real));
   FILE *fi = fopen(train_file, "rb");
   fseek(fi, file_size / (long long)num_threads * (long long)id, SEEK_SET);
@@ -586,14 +588,18 @@ void TrainModel() {
     int *cl = (int *)calloc(vocab_size, sizeof(int));
     real closev, x;
     real *cent = (real *)calloc(classes * layer1_size, sizeof(real));
+    //随机的分为 classes 个类
     for (a = 0; a < vocab_size; a++) cl[a] = a % clcn;
+    //迭代10次
     for (a = 0; a < iter; a++) {
       for (b = 0; b < clcn * layer1_size; b++) cent[b] = 0;
       for (b = 0; b < clcn; b++) centcn[b] = 1;
+      //该类中，对应的纬度都相加，并记录词的个数
       for (c = 0; c < vocab_size; c++) {
         for (d = 0; d < layer1_size; d++) cent[layer1_size * cl[c] + d] += syn0[c * layer1_size + d];
         centcn[cl[c]]++;
       }
+      //各维度求均值，求出质心。然后平方和求根，进行归一化。
       for (b = 0; b < clcn; b++) {
         closev = 0;
         for (c = 0; c < layer1_size; c++) {
@@ -603,6 +609,8 @@ void TrainModel() {
         closev = sqrt(closev);
         for (c = 0; c < layer1_size; c++) cent[layer1_size * b + c] /= closev;
       }
+
+      //对于每个点，(a,b,c)与质心(d,f,g)距离直接用ad+bf+cg来，找出最近的那个类。
       for (c = 0; c < vocab_size; c++) {
         closev = -10;
         closeid = 0;
@@ -614,6 +622,7 @@ void TrainModel() {
             closeid = d;
           }
         }
+        //重新划分类
         cl[c] = closeid;
       }
     }
